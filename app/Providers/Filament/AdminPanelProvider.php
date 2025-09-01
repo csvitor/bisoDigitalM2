@@ -6,6 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -41,6 +42,28 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
+            ])
+            ->navigationItems([
+                NavigationItem::make('Magento Admin')
+                    ->url('http://magento.local/admin', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-globe-alt')
+                    ->group('Links Externos')
+                    ->sort(1),
+                NavigationItem::make('Biso Digital')
+                    ->url('https://app.bisodigital.com.br', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-shopping-cart')
+                    ->group('Links Externos')
+                    ->sort(2),
+                NavigationItem::make('Documentação Biso')
+                    ->url('https://documenter.getpostman.com/view/12139432/SWLfi1VX', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-document-text')
+                    ->group('Links Externos')
+                    ->sort(3),
+                NavigationItem::make('Logs Sistemas')
+                    ->url('/logs', shouldOpenInNewTab: true)
+                    ->icon('heroicon-o-document-text')
+                    ->group('Logs')
+                    ->sort(4),
             ])
             ->middleware([
                 EncryptCookies::class,
