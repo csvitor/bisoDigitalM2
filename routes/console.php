@@ -18,7 +18,7 @@ if (env('MAGENTO_CRON_SYNC_PRODUCTS_STATUS') == 'enabled') {
     Schedule::command('app:export-products-to-biso-command')->cron('*/2 * * * *');
 }
 
-if (env('BISO_CRON_CHECK_INVENTORY_STATUS') == 'enabled') {
+if (env('MAGENTO_CRON_SYNC_INVENTORY_STATUS') == 'enabled') {
     // stock
     Schedule::command('app:import-magento-stocks-cron')->cron('*/2 * * * *');
     Schedule::command('app:export-stocks-to-biso-command')->cron('* * * * *');
