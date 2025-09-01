@@ -35,6 +35,21 @@ class Config extends Model
         'cron_import_stocks',
         'cron_export_orders',
         'cron_import_orders',
-        'cron_update_orders'
+        'cron_update_orders',
+        // Logs
+        'cron_time_export_products',
+        'cron_time_import_products',
+        'cron_time_export_stocks',
+        'cron_time_import_stocks',
+        'cron_time_export_orders',
+        'cron_time_import_orders',
+        'cron_time_update_orders',
+        'cron_time_next_execution_export_products',
+        'cron_time_next_execution_import_products',
+        'cron_time_next_execution_export_stocks',
+        'cron_time_next_execution_import_stocks',
+        'cron_time_next_execution_export_orders',
+        'cron_time_next_execution_import_orders',
+        'cron_time_next_execution_update_orders',
     ];
 }

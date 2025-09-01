@@ -128,6 +128,48 @@ class ConfigForm
                 ->numeric()
                 ->default(10)
                 ->helperText('Quantidade máxima de pedidos criados por execução'),
+                // Adicionando campos que faltam (agora como strings para expressões cron)
+                TextInput::make('cron_export_products')
+                    ->label('Cron: Exportar Produtos')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para exportação de produtos'),
+
+                TextInput::make('cron_import_products')
+                    ->label('Cron: Importar Produtos')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para importação de produtos'),
+
+                TextInput::make('cron_export_stocks')
+                    ->label('Cron: Exportar Estoques')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para exportação de estoques'),
+
+                TextInput::make('cron_import_stocks')
+                    ->label('Cron: Importar Estoques')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para importação de estoques'),
+
+                TextInput::make('cron_export_orders')
+                    ->label('Cron: Exportar Pedidos')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para exportação de pedidos'),
+
+                TextInput::make('cron_import_orders')
+                    ->label('Cron: Importar Pedidos')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para importação de pedidos'),
+
+                TextInput::make('cron_update_orders')
+                    ->label('Cron: Atualizar Pedidos')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para atualização de pedidos'),
             ]);
         }
 }
