@@ -14,7 +14,7 @@ if (env('MAGENTO_CRON_SYNC_ORDERS_STATUS') == 'enabled') {
 
 if (env('MAGENTO_CRON_SYNC_PRODUCTS_STATUS') == 'enabled') {
     // products
-    Schedule::command('app:import-magento-products')->everyMinute();
+    Schedule::command('app:import-magento-products-cron')->everyMinute();
     Schedule::command('app:export-products-to-biso-command')->cron('*/2 * * * *');
 }
 
