@@ -28,6 +28,13 @@ class Config extends Model
         'magento_invalid_status_pending',
         'biso_count_send_stock',
         'biso_count_products_created',
-        'biso_count_orders_created'
+        'biso_count_orders_created',
+        'cron_export_products',
+        'cron_import_products',
+        'cron_export_stocks',
+        'cron_import_stocks',
+        'cron_export_orders',
+        'cron_import_orders',
+        'cron_update_orders'
     ];
 }
