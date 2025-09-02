@@ -44,7 +44,7 @@ class ImportMagentoStocksCron extends Command
                         'filters' => [
                             [
                                 'field' => 'sku',
-                                'value' => $productsBase->pluck('m2_sku')->implode(','),
+                                'value' => $productsBase->pluck('m2_sku'),
                                 'condition_type' => 'eq',
                             ],
                         ],
