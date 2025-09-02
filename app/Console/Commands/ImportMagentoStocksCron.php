@@ -39,18 +39,18 @@ class ImportMagentoStocksCron extends Command
         $helper = HelperMagento::init();
         $params = [
             'searchCriteria' => [
-                'filter_groups' => [
-                    [
-                        'filters' => [
-                            [
-                                'field' => 'sku',
-                                'value' => $productsBase->pluck('m2_sku'),
-                                'condition_type' => 'eq',
-                            ],
-                        ],
-                    ],
+            'filter_groups' => [
+                [
+                'filters' => $productsBase->pluck('m2_sku')->map(function ($sku) {
+                    return [
+                    'field' => 'sku',
+                    'value' => $sku,
+                    'condition_type' => 'eq',
+                    ];
+                })->values()->all(),
                 ],
-                'pageSize' => $productsBase->count()
+            ],
+            'pageSize' => $productsBase->count()
             ]
         ];
 
