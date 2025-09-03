@@ -226,7 +226,7 @@ class ExportOrdersToBisoCommand extends Command
             'shippingPricePaidByCustomer' => $shippingAmount,
             'payments' => $payments,
             'items' => $items,
-            'origin' => 'Physical Store',
+            'origin' => 'Ecommerce',
             'status' => $this->mapMagentoStatusToBiso($order->m2_status, $order->m2_state, $order->is_paid),
             'shippingType' => $shippingAmount > 0 ? 'paid' : 'free',
         ];

@@ -74,12 +74,12 @@ class ExportProductsToBisoCommand extends Command
             'productId'         => (string)($m2_data['id'] ?? ''),
             'productSkuId'      => (string)($m2_data['sku'] ?? ''),
             'productName'       => $m2_data['name'] ?? '',
-            'productSkuName'    => $m2_data['name'] ?? '', // ou outro campo se necessário
+            'productSkuName'    => $m2_data['name'] ?? '',
             'productDepartmentId' => (string)($m2_data['attribute_set_id'] ?? ''),
-            'productDepartmentName' => '', // Magento não traz por padrão, preencha se tiver
+            'productDepartmentName' => 'Ecommerce', // Magento não traz por padrão
             'productPrice'      => (float)($m2_data['price'] ?? 0),
             'productCost'       => 0, // Preencha se tiver custo
-            'productSalePrice'  => (float)($m2_data['price'] ?? 0), // ou outro campo se necessário
+            'productSalePrice'  => (float)($m2_data['price'] ?? 0),
             'isActive'          => ($m2_data['status'] ?? 0) == 1,
         ];
     }
