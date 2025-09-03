@@ -40,6 +40,21 @@ class HelperMagento
         return env('MAGENTO_URL')  . '/rest/V1/';
     }
 
+    /**
+     * Busca uma categoria pelo ID
+     *
+     * @param int|string $categoryId
+     * @return mixed|null
+     */
+    public function getCategoryById($categoryId)
+    {
+        try {
+            return $this->service->call("categories/{$categoryId}", [], 'GET');
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     public static function init()
     {
         return new self();

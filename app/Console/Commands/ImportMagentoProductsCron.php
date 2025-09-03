@@ -46,7 +46,8 @@ class ImportMagentoProductsCron extends Command
         $sortBy = $pagination?->sort_by ?? 'updated_at';
 
         $params = [
-            'fields' => 'items[id,sku,name,price,status,type_id,attribute_set_id,weight,visibility,updated_at,created_at,custom_attributes[url_key,sync_biso_digital]],search_criteria[page_size,current_page],total_count[]',
+            // request category_links inside extension_attributes so we can get category IDs when category_ids is not present
+            'fields' => 'items[id,sku,name,price,status,type_id,attribute_set_id,weight,visibility,updated_at,created_at,extension_attributes[category_links],custom_attributes[url_key,sync_biso_digital]],search_criteria[page_size,current_page],total_count[]',
             'searchCriteria' => [
                 'filter_groups' => [
                     [
@@ -97,12 +98,47 @@ class ImportMagentoProductsCron extends Command
     private function saveProducts($products)
     {
         $products = (array) $products;
+        // initialize helper and cache once per batch to avoid repeated inits
+        $helper = HelperMagento::init();
+        $categoryCache = [];
+
         foreach ($products['items'] as $product) {
             $product = (array) $product;
+            // tenta obter a categoria principal a partir de diferentes fontes retornadas pelo Magento
+            $mainCategory = null;
+
+            if (isset($product['extension_attributes'])) {
+                $extension_attributes = (array) $product['extension_attributes'];
+                if (!empty($extension_attributes) && !empty($extension_attributes['category_links']) && is_array($extension_attributes['category_links'])) {
+                    $firstLink = $extension_attributes['category_links'][0] ?? null;
+                    $catId = null;
+                    if (is_array($firstLink)) {
+                        $catId = $firstLink['category_id'] ?? null;
+                    } elseif (is_object($firstLink)) {
+                        $catId = $firstLink->category_id ?? null;
+                    }
+                    if ($catId) {
+                        if (isset($categoryCache[$catId])) {
+                            $mainCategory = $categoryCache[$catId];
+                        } else {
+                            $cat = $helper->getCategoryById($catId);
+                            if ($cat && !empty($cat->name)) {
+                                $mainCategory = ['id' => $catId, 'name' => $cat->name];
+                                $categoryCache[$catId] = $mainCategory;
+                            }
+                        }
+                    }
+                }
+            }
             // Check if product exists by Magento ID
             $existingProduct = \App\Models\Product::where('m2_id', $product['id'])->first();
 
             if (!$existingProduct) {
+                // Attach main category info into m2_data
+                if ($mainCategory) {
+                    $product['category_main'] = $mainCategory;
+                }
+
                 // Create new product
                 \App\Models\Product::create([
                     'name' => $product['name'],
