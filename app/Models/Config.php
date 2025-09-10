@@ -51,5 +51,13 @@ class Config extends Model
         'cron_time_next_execution_export_orders',
         'cron_time_next_execution_import_orders',
         'cron_time_next_execution_update_orders',
+
+        // logs biso
+        'logs_biso_api',
+    ];
+
+    protected $casts = [
+        // logs biso
+        'logs_biso_api' => 'boolean',
     ];
 }

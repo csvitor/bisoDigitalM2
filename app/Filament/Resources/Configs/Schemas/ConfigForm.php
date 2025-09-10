@@ -170,6 +170,14 @@ class ConfigForm
                     ->required()
                     ->default('* * * * *')
                     ->helperText('Expressão cron para atualização de pedidos'),
+
+                // logs biso 
+                Select::make('logs_biso_api')
+                    ->label('Logs: Ativar Logs da API do Biso')
+                    ->options(['1' => 'Ativado', '0' => 'Desativado'])
+                    ->required()
+                    ->default('0')
+                    ->helperText('Ativa ou desativa o registro de logs para chamadas à API do Biso'),
             ]);
         }
 }

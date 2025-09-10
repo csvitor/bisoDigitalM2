@@ -17,6 +17,10 @@ class BisoApiLogger
      */
     public static function log($endpoint, $request, $headers, $response)
     {
+        if(!env('LOGS_BISO_API')) {
+            return;
+        }
+
         Log::channel('daily')->info('[BISO API CALL]', [
             'endpoint' => $endpoint,
             'request' => $request,
