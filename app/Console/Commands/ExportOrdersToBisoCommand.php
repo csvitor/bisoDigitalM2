@@ -184,15 +184,19 @@ class ExportOrdersToBisoCommand extends Command
                 $itemDiscount = (float)($item['discount_amount'] ?? 0);
                 $itemShipping = $shippingAmount > 0 ? ($itemTotal / $subtotal) * $shippingAmount : 0;
 
+                $itemTotalValue = round($itemTotal + $itemShipping, 2);
+                $itemShipping = round($itemShipping, 2);
+                $itemTotal = round($itemTotal, 2);
+
                 $items[] = [
                     'productId' => (string)($product->biso_id ?? ''),
                     'productSkuId' => (string)($product->biso_sku ?? $sku),
                     'productName' => $item['name'] ?? '',
                     'productSkuName' => $item['name'] ?? '',
                     'quantitySold' => (int)($item['qty_ordered'] ?? 1),
-                    'unitValue' => (float)($item['price'] ?? 0),
-                    'totalValue' => $itemTotal + $itemShipping, // Total do item + proporcional do frete
-                    'discountValue' => abs($itemDiscount),
+                    'unitValue' => round((float)($item['price'] ?? 0), 2),
+                    'totalValue' => $itemTotalValue, // Total do item + proporcional do frete
+                    'discountValue' => round(abs($itemDiscount), 2),
                     'shippingPrice' => $itemShipping,
                     'itemValueWithoutShippingPrice' => $itemTotal,
                     'shippingPricePaidByCustomer' => $itemShipping,
@@ -200,9 +204,10 @@ class ExportOrdersToBisoCommand extends Command
                     'sellerId' => '',
                 ];
 
-                $itemsTotalValue += $itemTotal + $itemShipping;
+                $itemsTotalValue += $itemTotalValue;
             }
         }
+        $itemsTotalValue = round($itemsTotalValue, 2);
 
         // Prepara informações de pagamento
         $payments = [];
@@ -219,11 +224,11 @@ class ExportOrdersToBisoCommand extends Command
             'orderId' => (string)$order->m2_id,
             'channel' => 'website',
             'totalValue' => $itemsTotalValue, // Usa a soma calculada dos itens
-            'discountValue' => abs($discountAmount),
+            'discountValue' => round(abs($discountAmount), 2),
             'createdAt' => $order->order_date->format('Y-m-d\TH:i:s'),
             'customerUniqueIdentifier' => (string)($m2Data['customer_id'] ?? $m2Data['customer_email'] ?? ''),
-            'shippingPrice' => $shippingAmount,
-            'shippingPricePaidByCustomer' => $shippingAmount,
+            'shippingPrice' => round($shippingAmount, 2),
+            'shippingPricePaidByCustomer' => round($shippingAmount, 2),
             'payments' => $payments,
             'items' => $items,
             'origin' => 'Ecommerce',
