@@ -3,6 +3,7 @@
 namespace App\Helpers;
 
 use Illuminate\Support\Facades\Http;
+use App\Helpers\BisoApiLogger;
 
 class HelperBisoDigital
 {
@@ -26,24 +27,24 @@ class HelperBisoDigital
     public function createOrder(array $orderData)
     {
         $url = sprintf('%s/orders', $this->getUrl());
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
         $response = $this->httpClient->post($url, $orderData);
-
+        BisoApiLogger::log($url, $orderData, $headers, $response->json() ?: $response->body());
         if ($response->successful()) {
             return [true, $response->json()];
         }
-        
         return [false, $response->json() ?: $response->body()];
     }
 
     public function getOrderById($orderId)
     {
         $url = sprintf('%s/orders/%s', $this->getUrl(), $orderId);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
         $response = $this->httpClient->get($url);
-
+        BisoApiLogger::log($url, [], $headers, $response->json() ?: $response->body());
         if ($response->successful()) {
             return $response->json();
         }
-        
         return null;
     }
 
@@ -53,30 +54,30 @@ class HelperBisoDigital
     public function createProduct(array $productData)
     {
         $url = sprintf('%s/products', $this->getUrl());
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
         $response = $this->httpClient->post($url, $productData);
-
+        BisoApiLogger::log($url, $productData, $headers, $response->json() ?: $response->body());
         if ($response->successful()) {
             return [true, $response->json()];
         }
-
         return [false, $response->json() ?: $response->body()];
     }
 
     public function createStockToBiso($productId, $productSkuId, array $stockData)
     {
-
         if ($this->middlewareStockCreate($productId, $productSkuId)) {
             return $this->updateStockToBiso($productId, $productSkuId, $stockData);
         }
-
         $url = sprintf(
             '%s/products/%s/sku/%s/stock',
             $this->getUrl(),
             $productId,
             $productSkuId
         );
-
-        return $this->httpClient->post($url, $stockData);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->post($url, $stockData);
+        BisoApiLogger::log($url, $stockData, $headers, $response->json() ?: $response->body());
+        return $response;
     }
 
     public function getHttpClient()
@@ -93,8 +94,10 @@ class HelperBisoDigital
             $sku,
             HelperBisoDigital::API_STORE_ID
         );
-
-        return $this->httpClient->get($url);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->get($url);
+        BisoApiLogger::log($url, [], $headers, $response->json() ?: $response->body());
+        return $response;
     }
 
     public function getUrl()
@@ -123,12 +126,12 @@ class HelperBisoDigital
     public function updateOrderStatus($bisoOrderId, array $statusData)
     {
         $url = sprintf('%s/orders/%s', $this->getUrl(), $bisoOrderId);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
         $response = $this->httpClient->patch($url, $statusData);
-
+        BisoApiLogger::log($url, $statusData, $headers, $response->json() ?: $response->body());
         if ($response->successful()) {
             return [true, $response->json()];
         }
-        
         return [false, $response->json() ?: $response->body()];
     }
 
@@ -234,7 +237,10 @@ class HelperBisoDigital
             $productSkuId,
             HelperBisoDigital::API_STORE_ID
         );
-        return $this->httpClient->patch($url, $stockData);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->patch($url, $stockData);
+        BisoApiLogger::log($url, $stockData, $headers, $response->json() ?: $response->body());
+        return $response;
     }
 
     /**
@@ -245,8 +251,9 @@ class HelperBisoDigital
         try {
             // Tenta fazer uma requisição para listar produtos (método mais simples para testar)
             $url = sprintf('%s/products?limit=1', $this->getUrl());
+            $headers = $this->httpClient->getOptions()['headers'] ?? [];
             $response = $this->httpClient->get($url);
-
+            BisoApiLogger::log($url, [], $headers, $response->json() ?: $response->body());
             return [
                 'success' => $response->successful(),
                 'status' => $response->status(),
@@ -254,6 +261,7 @@ class HelperBisoDigital
                 'url' => $url
             ];
         } catch (\Exception $e) {
+            BisoApiLogger::log($url ?? 'N/A', [], [], $e->getMessage());
             return [
                 'success' => false,
                 'status' => 0,
