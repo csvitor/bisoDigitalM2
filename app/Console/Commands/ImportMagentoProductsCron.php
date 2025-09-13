@@ -110,16 +110,24 @@ class ImportMagentoProductsCron extends Command
             if (isset($product['extension_attributes'])) {
                 $extension_attributes = (array) $product['extension_attributes'];
                 if (!empty($extension_attributes) && !empty($extension_attributes['category_links']) && is_array($extension_attributes['category_links'])) {
-                    $firstLink = $extension_attributes['category_links'][0] ?? null;
+                    $ignoreCategories = ['', '0', 0, null, 3, '3', '4', 4, 5, '5', 138, '138'];
                     $catId = null;
-                    if (is_array($firstLink)) {
-                        $catId = $firstLink['category_id'] ?? null;
-                    } elseif (is_object($firstLink)) {
-                        $catId = $firstLink->category_id ?? null;
+                    foreach ($extension_attributes['category_links'] as $link) {
+                        $candidateId = null;
+                        if (is_array($link)) {
+                            $candidateId = $link['category_id'] ?? null;
+                        } elseif (is_object($link)) {
+                            $candidateId = $link->category_id ?? null;
+                        }
+                        if (in_array($candidateId, $ignoreCategories, true)) {
+                            continue;
+                        }
+                        if ($candidateId !== null) {
+                            $catId = $candidateId;
+                            break;
+                        }
                     }
-                    if(in_array($catId, ['','0',0,null,'4',4,5,'5'], true)) {
-                       continue;
-                    }
+
                     if ($catId) {
                         if (isset($categoryCache[$catId])) {
                             $mainCategory = $categoryCache[$catId];
