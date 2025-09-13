@@ -36,7 +36,6 @@ class ExportProductsToBisoCommand extends Command
             // Call Biso API to export each product
 
             $productData = $this->prepareProductForBiso((array) $product->m2_data);
-
             $bisoHelper = HelperBisoDigital::init();
             $response = $bisoHelper->createProduct($productData);
 
@@ -78,17 +77,27 @@ class ExportProductsToBisoCommand extends Command
             'productDepartmentId' => (string)($m2_data['category_main']['id'] ?? ''),
             'productDepartmentName' => $m2_data['category_main']['name'] ?? '', // Magento não traz por padrão
             'productPrice'      => (float)($m2_data['price'] ?? 0),
-            'productCost'       => 0, // Preencha se tiver custo
+            'productCost'       => (float) $this->getCustomAttributes($m2_data['custom_attributes'] ?? [], 'cost') ?? 0,
             'productSalePrice'  => (float)($m2_data['price'] ?? 0),
             'isActive'          => ($m2_data['status'] ?? 0) == 1,
         ];
     }
 
-    private function callBisoApi(array $data)
+    /**
+     * Get a specific custom attribute value by key.
+     * @param array $custom_attributes
+     * @param mixed $key
+     * @return array|null
+     */
+    private function getCustomAttributes(array $custom_attributes, $key): mixed
     {
-        // Este método não é mais necessário pois usamos o helper
-        // Mantido para compatibilidade, mas pode ser removido
-        $bisoHelper = HelperBisoDigital::init();
-        return $bisoHelper->createProduct($data);
+        if (isset($custom_attributes) && is_array($custom_attributes)) {
+            foreach ($custom_attributes as $attr) {
+                if(isset($attr['attribute_code']) && isset($attr['value']) && $key === $attr['attribute_code']) {
+                    return $attr['value'];
+                }
+            }
+        }
+        return null;
     }
 }
