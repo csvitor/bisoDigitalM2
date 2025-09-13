@@ -117,6 +117,9 @@ class ImportMagentoProductsCron extends Command
                     } elseif (is_object($firstLink)) {
                         $catId = $firstLink->category_id ?? null;
                     }
+                    if(in_array($catId, ['','0',0,null,4,5], true)) {
+                       continue;
+                    }
                     if ($catId) {
                         if (isset($categoryCache[$catId])) {
                             $mainCategory = $categoryCache[$catId];
