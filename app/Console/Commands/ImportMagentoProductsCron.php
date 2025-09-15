@@ -122,8 +122,8 @@ class ImportMagentoProductsCron extends Command
                         } elseif (is_object($link)) {
                             $candidateId = $link->category_id ?? null;
                         }
-                        // Se não há categorias permitidas configuradas OU se a categoria está na lista permitida
-                        if (empty($allowedCategories) || in_array((int)$candidateId, $allowedCategories, true)) {
+                        // categoria está na lista permitida
+                        if (!empty($allowedCategories) && in_array((int)$candidateId, $allowedCategories, true)) {
                             if ($candidateId !== null) {
                                 $catId = $candidateId;
                                 break;
