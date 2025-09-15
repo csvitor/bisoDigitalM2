@@ -54,10 +54,12 @@ class Config extends Model
 
         // logs biso
         'logs_biso_api',
+        'allowed_categories',
     ];
 
     protected $casts = [
         // logs biso
         'logs_biso_api' => 'boolean',
+        'allowed_categories' => 'array',
     ];
 }

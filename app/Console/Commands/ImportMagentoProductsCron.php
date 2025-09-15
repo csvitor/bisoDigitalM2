@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Helpers\HelperMagento;
 use Illuminate\Console\Command;
 use App\Models\PaginationMagento;
+use App\Models\Config;
 
 class ImportMagentoProductsCron extends Command
 {
@@ -102,6 +103,10 @@ class ImportMagentoProductsCron extends Command
         $helper = HelperMagento::init();
         $categoryCache = [];
 
+        // Busca as categorias permitidas da configuração
+        $config = Config::first();
+        $allowedCategories = $config?->allowed_categories ?? [];
+
         foreach ($products['items'] as $product) {
             $product = (array) $product;
             // tenta obter a categoria principal a partir de diferentes fontes retornadas pelo Magento
@@ -110,7 +115,6 @@ class ImportMagentoProductsCron extends Command
             if (isset($product['extension_attributes'])) {
                 $extension_attributes = (array) $product['extension_attributes'];
                 if (!empty($extension_attributes) && !empty($extension_attributes['category_links']) && is_array($extension_attributes['category_links'])) {
-                    $ignoreCategories = ['', '0', 0, null, 3, '3', '4', 4, 5, '5', 138, '138'];
                     $catId = null;
                     foreach ($extension_attributes['category_links'] as $link) {
                         $candidateId = null;
@@ -119,12 +123,12 @@ class ImportMagentoProductsCron extends Command
                         } elseif (is_object($link)) {
                             $candidateId = $link->category_id ?? null;
                         }
-                        if (in_array($candidateId, $ignoreCategories, true)) {
-                            continue;
-                        }
-                        if ($candidateId !== null) {
-                            $catId = $candidateId;
-                            break;
+                        // Se não há categorias permitidas configuradas OU se a categoria está na lista permitida
+                        if (empty($allowedCategories) || in_array((int)$candidateId, $allowedCategories, true)) {
+                            if ($candidateId !== null) {
+                                $catId = $candidateId;
+                                break;
+                            }
                         }
                     }
 

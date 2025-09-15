@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Configs\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
 class ConfigForm
@@ -178,6 +179,25 @@ class ConfigForm
                     ->required()
                     ->default('0')
                     ->helperText('Ativa ou desativa o registro de logs para chamadas à API do Biso'),
+
+                // Categorias permitidas
+                Textarea::make('allowed_categories_input')
+                    ->label('Categorias Permitidas')
+                    ->placeholder('1,2,3,10,15')
+                    ->helperText('IDs das categorias do Magento que serão aceitas (separados por vírgula). Ex: 1,2,3,10,15')
+                    ->dehydrateStateUsing(function ($state) {
+                        if (empty($state)) {
+                            return null;
+                        }
+                        // Converte string "1,2,3" para array [1,2,3]
+                        return array_map('intval', array_filter(explode(',', $state)));
+                    })
+                    ->formatStateUsing(function ($state, $record) {
+                        // Carrega do campo allowed_categories e converte para string
+                        $categories = $record?->allowed_categories ?? [];
+                        return is_array($categories) ? implode(',', $categories) : '';
+                    })
+                    ->statePath('allowed_categories'),
             ]);
         }
 }
