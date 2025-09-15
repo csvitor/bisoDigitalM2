@@ -131,17 +131,18 @@ class ImportMagentoProductsCron extends Command
                         }
                     }
 
-                    if ($catId) {
-                        if (isset($categoryCache[$catId])) {
-                            $mainCategory = $categoryCache[$catId];
-                        } else {
-                            $cat = $helper->getCategoryById($catId);
-                            if ($cat && !empty($cat->name)) {
-                                $mainCategory = ['id' => $catId, 'name' => $cat->name];
-                                $categoryCache[$catId] = $mainCategory;
-                            }
-                        }
+                    if (!$catId) {
+                        continue;
                     }
+
+                    if (!isset($categoryCache[$catId])) {
+                        $cat = $helper->getCategoryById($catId);
+                        if ($cat && !empty($cat->name)) {
+                           continue;
+                        }
+                        $categoryCache[$catId] = ['id' => $catId, 'name' => $cat->name];
+                    }
+                    $mainCategory = $categoryCache[$catId];
                 }
             }
             // Check if product exists by Magento ID
