@@ -181,7 +181,7 @@ class ConfigForm
                     ->helperText('Ativa ou desativa o registro de logs para chamadas à API do Biso'),
 
                 // Categorias permitidas
-                Textarea::make('allowed_categories_input')
+                Textarea::make('allowed_categories')
                     ->label('Categorias Permitidas')
                     ->placeholder('1,2,3,10,15')
                     ->helperText('IDs das categorias do Magento que serão aceitas (separados por vírgula). Ex: 1,2,3,10,15'),
