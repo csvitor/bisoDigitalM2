@@ -63,6 +63,37 @@ class HelperBisoDigital
         return [false, $response->json() ?: $response->body()];
     }
 
+    /**
+     * Busca um produto no Biso Digital pelo ID e SKU
+     * @param mixed $product_id
+     * @param mixed $product_sku_id
+     */
+    public function getProductById($product_id, $product_sku_id)
+    {
+        $url = sprintf('%s/products/%s/sku/%s', $this->getUrl(), $product_id, $product_sku_id);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->get($url);
+        BisoApiLogger::log($url, [], $headers, $response->json() ?: $response->body());
+        if ($response->successful()) {
+            return $response->json();
+        }
+        return null;
+    }
+    /**
+     * Atualiza um produto no Biso Digital
+     */
+    public function updateProduct(array $productData)
+    {
+        $url = sprintf('%s/products/%s/sku/%s', $this->getUrl(), $productData['productId'], $productData['productSkuId']);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->patch($url, $productData);
+        BisoApiLogger::log($url, $productData, $headers, $response->json() ?: $response->body());
+        if ($response->successful()) {
+            return [true, $response->json()];
+        }
+        return [false, $response->json() ?: $response->body()];
+    }
+
     public function createStockToBiso($productId, $productSkuId, array $stockData)
     {
         if ($this->middlewareStockCreate($productId, $productSkuId)) {

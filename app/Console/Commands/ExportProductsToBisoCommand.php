@@ -37,7 +37,10 @@ class ExportProductsToBisoCommand extends Command
 
             $productData = $this->prepareProductForBiso((array) $product->m2_data);
             $bisoHelper = HelperBisoDigital::init();
-            $response = $bisoHelper->createProduct($productData);
+            $product_biso = $bisoHelper->getProductById($productData['productId'], $productData['productSkuId']);
+            $response = $product_biso && isset($product_biso['productId']) 
+                ? $bisoHelper->updateProduct($productData) 
+                : $bisoHelper->createProduct($productData);
 
 
             if ($response[0]) {

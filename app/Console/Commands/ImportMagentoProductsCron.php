@@ -137,7 +137,7 @@ class ImportMagentoProductsCron extends Command
 
                     if (!isset($categoryCache[$catId])) {
                         $cat = $helper->getCategoryById($catId);
-                        if ($cat && !empty($cat->name)) {
+                        if (!$cat || empty($cat->name)) {
                            continue;
                         }
                         $categoryCache[$catId] = ['id' => $catId, 'name' => $cat->name];
