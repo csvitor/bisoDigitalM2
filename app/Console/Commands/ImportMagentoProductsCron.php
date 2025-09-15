@@ -104,8 +104,7 @@ class ImportMagentoProductsCron extends Command
         $categoryCache = [];
 
         // Busca as categorias permitidas da configuração
-        $config = Config::first();
-        $allowedCategories = $config?->allowed_categories ?? [];
+        $allowedCategories = explode(',', env('ALLOWED_CATEGORIES', '')); // array de strings
 
         foreach ($products['items'] as $product) {
             $product = (array) $product;

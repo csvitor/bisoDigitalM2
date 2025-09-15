@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('config', function (Blueprint $table) {
-            $table->json('allowed_categories')->nullable();
+            $table->string('allowed_categories', 500)->nullable();
         });
     }
 
