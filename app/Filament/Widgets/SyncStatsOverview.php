@@ -23,25 +23,19 @@ class SyncStatsOverview extends BaseWidget
         // Estatísticas de Produtos
         $totalProducts = Product::count();
         $syncedProducts = Product::where('is_synced', true)->count();
-        $errorProducts = Product::whereNotNull('log')->where('log', '!=', '')->count();
+       // $errorProducts = Product::whereNotNull('log')->where('log', '!=', '')->count();
         $pendingProducts = $totalProducts - $syncedProducts;
 
         // Estatísticas de Pedidos
         $totalOrders = Order::count();
         $syncedOrders = Order::where('is_synced_to_biso', true)->count();
-        $errorOrders = Order::whereNotNull('log')->where('log', '!=', '[
-    true,
-    null
-]')->count();
+       // $errorOrders = Order::whereNotNull('log')->where('log', '!=', '')->count();
         $pendingOrders = $totalOrders - $syncedOrders;
 
         // Estatísticas de Stock
         $totalStocks = Stock::count();
         $syncedStocks = Stock::where('is_synced', true)->count();
-        $errorStocks = Stock::whereNotNull('stock_logs')->where('stock_logs', '!=', '[
-    true,
-    null
-]')->count();
+        $errorStocks = Stock::whereNotNull('stock_logs')->where('stock_logs', '!=', '[]')->count();
         $pendingStocks = $totalStocks - $syncedStocks;
 
         return [
@@ -56,10 +50,10 @@ class SyncStatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
             
-            Stat::make('Produtos com Erro', $errorProducts)
-                ->description('Necessitam atenção')
-                ->descriptionIcon('heroicon-m-exclamation-triangle')
-                ->color('danger'),
+            // Stat::make('Produtos com Erro', $errorProducts)
+            //     ->description('Necessitam atenção')
+            //     ->descriptionIcon('heroicon-m-exclamation-triangle')
+            //     ->color('danger'),
 
             // Pedidos
             Stat::make('Pedidos Sincronizados', $syncedOrders)
@@ -72,10 +66,10 @@ class SyncStatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
             
-            Stat::make('Pedidos com Erro', $errorOrders)
-                ->description('Necessitam atenção')
-                ->descriptionIcon('heroicon-m-exclamation-triangle')
-                ->color('danger'),
+            // Stat::make('Pedidos com Erro', $errorOrders)
+            //     ->description('Necessitam atenção')
+            //     ->descriptionIcon('heroicon-m-exclamation-triangle')
+            //     ->color('danger'),
 
             // Stock
             Stat::make('Stocks Sincronizados', $syncedStocks)
