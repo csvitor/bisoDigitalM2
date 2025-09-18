@@ -82,10 +82,10 @@ class SyncStatsOverview extends BaseWidget
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
             
-            Stat::make('Stocks com Erro', $errorStocks)
-                ->description('Necessitam atenção')
-                ->descriptionIcon('heroicon-m-exclamation-triangle')
-                ->color('danger'),
+            // Stat::make('Stocks com Erro', $errorStocks)
+            //     ->description('Necessitam atenção')
+            //     ->descriptionIcon('heroicon-m-exclamation-triangle')
+            //     ->color('danger'),
         ];
     }
 }
