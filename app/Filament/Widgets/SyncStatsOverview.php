@@ -29,13 +29,19 @@ class SyncStatsOverview extends BaseWidget
         // Estatísticas de Pedidos
         $totalOrders = Order::count();
         $syncedOrders = Order::where('is_synced_to_biso', true)->count();
-        $errorOrders = Order::whereNotNull('log')->where('log', '!=', '')->count();
+        $errorOrders = Order::whereNotNull('log')->where('log', '!=', '[
+    true,
+    null
+]')->count();
         $pendingOrders = $totalOrders - $syncedOrders;
 
         // Estatísticas de Stock
         $totalStocks = Stock::count();
         $syncedStocks = Stock::where('is_synced', true)->count();
-        $errorStocks = Stock::whereNotNull('stock_logs')->where('stock_logs', '!=', '[]')->count();
+        $errorStocks = Stock::whereNotNull('stock_logs')->where('stock_logs', '!=', '[
+    true,
+    null
+]')->count();
         $pendingStocks = $totalStocks - $syncedStocks;
 
         return [
