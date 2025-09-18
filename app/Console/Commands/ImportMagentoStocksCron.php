@@ -35,42 +35,55 @@ class ImportMagentoStocksCron extends Command
             return;
         }
 
-        // Import Magento products logic here
+        // Import Magento stocks logic here
         $helper = HelperMagento::init();
-        $params = [
-            'searchCriteria' => [
-            'filter_groups' => [
-                [
-                'filters' => $productsBase->pluck('m2_sku')->map(function ($sku) {
-                    return [
-                    'field' => 'sku',
-                    'value' => $sku,
-                    'condition_type' => 'eq',
-                    ];
-                })->values()->all(),
-                ],
-            ],
-            'pageSize' => $productsBase->count()
-            ]
-        ];
+        $productsMap = $this->convertProducts($productsBase);
 
-        $stocks = (array) $helper->getStocks($params);
-        $products = $this->convertProducts($productsBase);
-        foreach ($stocks['items'] as $item) {
-            $item = (array) $item;
-            if (isset($products[$item['sku']])) {
-                $current = $products[$item['sku']];
+        // Para evitar 414 (URL muito longa), dividimos os SKUs em lotes e usamos condition_type IN
+        $skus = $productsBase->pluck('m2_sku')->filter()->values()->all();
+        $chunkSize = 50; // tamanho do lote
+
+        foreach (array_chunk($skus, $chunkSize) as $chunk) {
+            $params = [
+                'searchCriteria' => [
+                    'filter_groups' => [
+                        [
+                            'filters' => [
+                                [
+                                    'field' => 'sku',
+                                    'value' => implode(',', $chunk),
+                                    'condition_type' => 'in',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'pageSize' => count($chunk),
+                ],
+            ];
+
+            $stocksResponse = (array) $helper->getStocks($params);
+            $items = isset($stocksResponse['items']) ? (array) $stocksResponse['items'] : [];
+            foreach ($items as $item) {
+                $item = (array) $item;
+                $sku = $item['sku'] ?? null;
+                if (!$sku || !isset($productsMap[$sku])) {
+                    continue;
+                }
+                $current = $productsMap[$sku];
+                $quantity = $item['quantity'] ?? 0;
+                $status = $item['status'] ?? 0;
+
                 if ($current->stocks()->exists()) {
                     $stockCurrent = $current->stocks()->first();
-                    if ($stockCurrent->quantity !== $item['quantity']) {
+                    if ((float) $stockCurrent->quantity !== (float) $quantity || (int) $stockCurrent->is_in_stock !== (int) $status) {
                         $stockCurrent->update([
-                            'quantity' => $item['quantity'],
-                            'is_in_stock' => $item['status'],
+                            'quantity' => $quantity,
+                            'is_in_stock' => $status,
                             'sync_biso_digital' => true,
                             'stock_logs' => array_merge($stockCurrent->stock_logs ?? [], [[
                                 'changed_by' => 'system',
                                 'old_quantity' => $stockCurrent->quantity,
-                                'new_quantity' => $item['quantity'],
+                                'new_quantity' => $quantity,
                                 'reason' => 'import',
                                 'timestamp' => now()->toISOString(),
                             ]])
@@ -79,14 +92,14 @@ class ImportMagentoStocksCron extends Command
                     continue;
                 }
                 $current->stocks()->create([
-                    'quantity' => $item['quantity'],
-                    'is_in_stock' => $item['status'],
+                    'quantity' => $quantity,
+                    'is_in_stock' => $status,
                     'sync_biso_digital' => true,
                     'stock_logs' => [
                         [
                             'changed_by' => 'system',
                             'old_quantity' => '-',
-                            'new_quantity' => $item['quantity'],
+                            'new_quantity' => $quantity,
                             'reason' => 'import',
                             'timestamp' => now()->toISOString(),
                         ]
