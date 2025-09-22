@@ -176,11 +176,10 @@ class ExportOrdersToBisoCommand extends Command
         $m2Data = $order->m2_data;
 
         // Calcula valores do pedido
-        $shippingAmount = (float)($m2Data['shipping_amount'] ?? 0);
-        $discountAmount = (float)($m2Data['discount_amount'] ?? 0);
-        $taxAmount = (float)($m2Data['tax_amount'] ?? 0);
-        $subtotal = (float)($m2Data['subtotal'] ?? 0);
-        $grandTotal = (float)($m2Data['grand_total'] ?? 0);
+        $shippingAmount = $m2Data['shipping_amount'] ?? 0;
+        $discountAmount = $m2Data['discount_amount'] ?? 0;
+        $subtotal = $m2Data['subtotal'] ?? 0;
+        $grandTotal = $m2Data['grand_total'] ?? 0;
 
         // Prepara os itens do pedido
         $items = [];
