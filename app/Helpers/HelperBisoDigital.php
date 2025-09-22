@@ -7,7 +7,7 @@ use App\Helpers\BisoApiLogger;
 
 class HelperBisoDigital
 {
-    const API_URL = 'https://baas-api.biso.digital';
+    const API_URL = 'https://api.bisodigital.com';
     const API_HOMOLOG_URL = 'https://baas-api-homolog.biso.digital';
     const API_STORE_ID = 'loja';
 
@@ -300,5 +300,77 @@ class HelperBisoDigital
                 'url' => $url ?? 'N/A'
             ];
         }
+    }
+
+    /**
+     * Busca todos os pagamentos de um pedido
+     */
+    public function getOrderPayments($orderId, $page = 1, $pageSize = 100)
+    {
+        $url = sprintf('%s/orders/%s/payments', $this->getUrl(), $orderId);
+        $params = [
+            'page' => $page,
+            'page-size' => $pageSize
+        ];
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->get($url, $params);
+        BisoApiLogger::log($url, $params, $headers, $response->json() ?: $response->body());
+        
+        if ($response->successful()) {
+            return [true, $response->json()];
+        }
+        
+        return [false, $response->json() ?: $response->body()];
+    }
+
+    /**
+     * Busca um pagamento específico de um pedido
+     */
+    public function getOrderPayment($orderId, $paymentId)
+    {
+        $url = sprintf('%s/orders/%s/payments/%s', $this->getUrl(), $orderId, $paymentId);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->get($url);
+        BisoApiLogger::log($url, [], $headers, $response->json() ?: $response->body());
+        
+        if ($response->successful()) {
+            return [true, $response->json()];
+        }
+        
+        return [false, $response->json() ?: $response->body()];
+    }
+
+    /**
+     * Adiciona um pagamento a um pedido
+     */
+    public function addOrderPayment($orderId, array $paymentData)
+    {
+        $url = sprintf('%s/orders/%s/payments', $this->getUrl(), $orderId);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->post($url, $paymentData);
+        BisoApiLogger::log($url, $paymentData, $headers, $response->json() ?: $response->body());
+        
+        if ($response->successful()) {
+            return [true, $response->json()];
+        }
+        
+        return [false, $response->json() ?: $response->body()];
+    }
+
+    /**
+     * Atualiza um pagamento de um pedido
+     */
+    public function updateOrderPayment($orderId, $paymentId, array $paymentData)
+    {
+        $url = sprintf('%s/orders/%s/payments/%s', $this->getUrl(), $orderId, $paymentId);
+        $headers = $this->httpClient->getOptions()['headers'] ?? [];
+        $response = $this->httpClient->patch($url, $paymentData);
+        BisoApiLogger::log($url, $paymentData, $headers, $response->json() ?: $response->body());
+        
+        if ($response->successful()) {
+            return [true, $response->json()];
+        }
+        
+        return [false, $response->json() ?: $response->body()];
     }
 }

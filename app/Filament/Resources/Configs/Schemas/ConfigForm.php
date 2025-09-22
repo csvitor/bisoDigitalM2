@@ -172,6 +172,23 @@ class ConfigForm
                     ->default('* * * * *')
                     ->helperText('Expressão cron para atualização de pedidos'),
 
+                TextInput::make('cron_register_payments')
+                    ->label('Cron: Registrar Pagamentos')
+                    ->required()
+                    ->default('* * * * *')
+                    ->helperText('Expressão cron para registro de pagamentos no Biso'),
+
+                TextInput::make('cron_time_register_payments')
+                    ->label('Tempo: Registrar Pagamentos')
+                    ->required()
+                    ->default('05:00')
+                    ->helperText('Horário para execução do cron de registrar pagamentos (HH:MM)'),
+
+                TextInput::make('cron_time_next_execution_register_payments')
+                    ->label('Próxima Execução: Registrar Pagamentos')
+                    ->helperText('Data e hora da próxima execução do cron de registrar pagamentos')
+                    ->disabled(),
+
                 // logs biso 
                 Select::make('logs_biso_api')
                     ->label('Logs: Ativar Logs da API do Biso')

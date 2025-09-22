@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\PaymentMethod;
 use App\Helpers\HelperBisoDigital;
 use Illuminate\Console\Command;
 
@@ -91,6 +92,17 @@ class ExportOrdersToBisoCommand extends Command
                 ]);
             }
             $this->error("Pedido {$order->order_number} não pode ser enviado: produtos não estão integrados com o Biso.");
+            return;
+        }
+
+        // Verifica se o pagamento foi registrado na Biso (se o pedido tem pagamento)
+        if (isset($order->m2_data['payment']) && !$order->is_payment_synced) {
+            if (!$forced) {
+                $order->update([
+                    'log' => $order->log . '|PAGAMENTO_NAO_REGISTRADO_BISO',
+                ]);
+            }
+            $this->error("Pedido {$order->order_number} não pode ser enviado: pagamento não foi registrado na Biso. Execute 'biso:register-payments' primeiro.");
             return;
         }
         $orderData = $this->prepareOrderForBiso($order);
@@ -211,13 +223,31 @@ class ExportOrdersToBisoCommand extends Command
 
         // Prepara informações de pagamento
         $payments = [];
-        if (isset($m2Data['payment'])) {
-            $payments[] = [
-                'paymentId' => (string)($m2Data['payment']['entity_id'] ?? $order->m2_id),
-                'paymentMethod' => $m2Data['payment']['method'] ?? '',
-                'paymentInstallment' => 1,
-                'paymentValue' => $order->total_amount,
-            ];
+        if (isset($m2Data['payment']) && $order->is_payment_synced) {
+            // Usa o ID do pagamento já registrado na Biso
+            $paymentId = $order->payment_biso_id ?? (string)($m2Data['payment']['entity_id'] ?? $order->m2_id);
+            
+            $magentoPaymentMethod = $m2Data['payment']['method'] ?? '';
+            $paymentMethod = PaymentMethod::findByMagentoCode($magentoPaymentMethod);
+            
+            if ($paymentMethod) {
+                $payments[] = [
+                    'paymentId' => $paymentId,
+                    'paymentMethod' => $paymentMethod->biso_payment_method,
+                    'formsOfPayment' => $paymentMethod->biso_forms_of_payment,
+                    'paymentInstallment' => min($paymentMethod->max_installments, 1),
+                    'paymentValue' => round((float)$order->total_amount, 2),
+                ];
+            } else {
+                // Fallback para método não mapeado
+                $payments[] = [
+                    'paymentId' => $paymentId,
+                    'paymentMethod' => $magentoPaymentMethod ?: 'Unknown',
+                    'formsOfPayment' => null,
+                    'paymentInstallment' => 1,
+                    'paymentValue' => round((float)$order->total_amount, 2),
+                ];
+            }
         }
 
         return [

@@ -44,6 +44,7 @@ class ConfigSeeder extends Seeder
                 'cron_export_orders' => '*/2 * * * *',
                 'cron_import_orders' => '*/2 * * * *',
                 'cron_update_orders' => '*/3 * * * *',
+                'cron_register_payments' => '*/1 * * * *',
                 // Logs de tempo (inicialmente null)
                 'cron_time_export_products' => null,
                 'cron_time_import_products' => null,
@@ -52,6 +53,7 @@ class ConfigSeeder extends Seeder
                 'cron_time_export_orders' => null,
                 'cron_time_import_orders' => null,
                 'cron_time_update_orders' => null,
+                'cron_time_register_payments' => null,
                 'cron_time_next_execution_export_products' => null,
                 'cron_time_next_execution_import_products' => null,
                 'cron_time_next_execution_export_stocks' => null,
@@ -59,6 +61,7 @@ class ConfigSeeder extends Seeder
                 'cron_time_next_execution_export_orders' => null,
                 'cron_time_next_execution_import_orders' => null,
                 'cron_time_next_execution_update_orders' => null,
+                'cron_time_next_execution_register_payments' => null,
             ]);
         }
     }

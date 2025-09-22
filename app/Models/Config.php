@@ -36,6 +36,7 @@ class Config extends Model
         'cron_export_orders',
         'cron_import_orders',
         'cron_update_orders',
+        'cron_register_payments',
         // Logs
         'cron_time_export_products',
         'cron_time_import_products',
@@ -44,6 +45,7 @@ class Config extends Model
         'cron_time_export_orders',
         'cron_time_import_orders',
         'cron_time_update_orders',
+        'cron_time_register_payments',
         'cron_time_next_execution_export_products',
         'cron_time_next_execution_import_products',
         'cron_time_next_execution_export_stocks',
@@ -51,6 +53,7 @@ class Config extends Model
         'cron_time_next_execution_export_orders',
         'cron_time_next_execution_import_orders',
         'cron_time_next_execution_update_orders',
+        'cron_time_next_execution_register_payments',
 
         // logs biso
         'logs_biso_api',

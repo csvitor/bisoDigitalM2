@@ -10,6 +10,18 @@ use Illuminate\Support\Facades\Schedule;
 $config = Config::first();
 
 if ($config && env('MAGENTO_CRON_SYNC_ORDERS_STATUS') == 'enabled') {
+    // Register payments first (before orders)
+    Schedule::command('biso:register-payments')
+        ->cron($config->cron_register_payments ?? '*/1 * * * *')
+        ->before(function () use ($config) {
+            $config->update(['cron_time_register_payments' => now()]);
+        })
+        ->after(function () use ($config) {
+            $cron = $config->cron_register_payments ?? '*/1 * * * *';
+            $nextExecution = CronHelper::getNextExecution($cron);
+            $config->update(['cron_time_next_execution_register_payments' => $nextExecution]);
+        });
+
     // sales orders & get e push
     Schedule::command('app:import-magento-orders')
         ->cron($config->cron_import_orders ?? '*/2 * * * *')

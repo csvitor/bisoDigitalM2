@@ -6,6 +6,7 @@ use App\Models\Config;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Stock;
+use App\Models\PaymentMethod;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\DB;
@@ -37,6 +38,10 @@ class SyncStatsOverview extends BaseWidget
         $syncedStocks = Stock::where('is_synced', true)->count();
         $errorStocks = Stock::whereNotNull('stock_logs')->where('stock_logs', '!=', '[]')->count();
         $pendingStocks = $totalStocks - $syncedStocks;
+
+        // Estatísticas de Formas de Pagamento
+        $totalPaymentMethods = PaymentMethod::count();
+        $activePaymentMethods = PaymentMethod::where('is_active', true)->count();
 
         return [
             // Produtos
@@ -81,6 +86,12 @@ class SyncStatsOverview extends BaseWidget
                 ->description('Aguardando sincronização')
                 ->descriptionIcon('heroicon-m-clock')
                 ->color('warning'),
+            
+            // Formas de Pagamento
+            Stat::make('Formas de Pagamento', $activePaymentMethods)
+                ->description($totalPaymentMethods . ' total configuradas')
+                ->descriptionIcon('heroicon-m-credit-card')
+                ->color('info'),
             
             // Stat::make('Stocks com Erro', $errorStocks)
             //     ->description('Necessitam atenção')
