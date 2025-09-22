@@ -351,7 +351,12 @@ class HelperBisoDigital
         BisoApiLogger::log($url, $paymentData, $headers, $response->json() ?: $response->body());
         
         if ($response->successful()) {
-            return [true, $response->json()];
+            // API Biso retorna 201 com body null em sucesso
+            $responseData = $response->json();
+            if ($response->status() === 201 && is_null($responseData)) {
+                return [true, ['status' => 'created', 'paymentId' => $paymentData['paymentId']]];
+            }
+            return [true, $responseData];
         }
         
         return [false, $response->json() ?: $response->body()];
@@ -368,7 +373,12 @@ class HelperBisoDigital
         BisoApiLogger::log($url, $paymentData, $headers, $response->json() ?: $response->body());
         
         if ($response->successful()) {
-            return [true, $response->json()];
+            // API Biso pode retornar 200/201 com body null em sucesso
+            $responseData = $response->json();
+            if (in_array($response->status(), [200, 201]) && is_null($responseData)) {
+                return [true, ['status' => 'updated', 'paymentId' => $paymentId]];
+            }
+            return [true, $responseData];
         }
         
         return [false, $response->json() ?: $response->body()];
