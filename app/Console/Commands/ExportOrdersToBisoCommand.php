@@ -227,7 +227,7 @@ class ExportOrdersToBisoCommand extends Command
         }
         
         // Usa o grand_total como referência principal para evitar discrepâncias
-        $orderTotalValue = round($grandTotal, 2);
+        $orderTotalValue = $grandTotal;
 
         // Prepara informações de pagamento
         $payments = [];
