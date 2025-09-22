@@ -68,11 +68,11 @@ class ExportOrdersToBisoCommand extends Command
     /**
      * Processa um pedido específico
      */
-    private function processOrder(Order $order, bool $forced = false, int $maxAttempts = 3, HelperBisoDigital $bisoHelper = null)
+    private function processOrder(Order $order, bool $forced = false, int $maxAttempts = 3)
     {
-        if (!$bisoHelper) {
-            $bisoHelper = HelperBisoDigital::init();
-        }
+        
+        $bisoHelper = HelperBisoDigital::init();
+        
 
         // Se for forçado, não incrementa tentativas na inicialização
         if (!$forced) {
