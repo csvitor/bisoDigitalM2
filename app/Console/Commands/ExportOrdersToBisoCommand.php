@@ -95,16 +95,6 @@ class ExportOrdersToBisoCommand extends Command
             return;
         }
 
-        // Verifica se o pagamento foi registrado na Biso (se o pedido tem pagamento)
-        if (isset($order->m2_data['payment']) && !$order->is_payment_synced) {
-            if (!$forced) {
-                $order->update([
-                    'log' => $order->log . '|PAGAMENTO_NAO_REGISTRADO_BISO',
-                ]);
-            }
-            $this->error("Pedido {$order->order_number} não pode ser enviado: pagamento não foi registrado na Biso. Execute 'biso:register-payments' primeiro.");
-            return;
-        }
         $orderData = $this->prepareOrderForBiso($order);
         $response = $bisoHelper->createOrder($orderData);
         if ($response[0]) {
@@ -176,10 +166,10 @@ class ExportOrdersToBisoCommand extends Command
         $m2Data = $order->m2_data;
 
         // Calcula valores do pedido
-        $shippingAmount = $m2Data['shipping_amount'] ?? 0;
-        $discountAmount = $m2Data['discount_amount'] ?? 0;
-        $subtotal = $m2Data['subtotal'] ?? 0;
-        $grandTotal = $m2Data['grand_total'] ?? 0;
+        $shippingAmount = (float)($m2Data['shipping_amount'] ?? 0);
+        $discountAmount = (float)($m2Data['discount_amount'] ?? 0);
+        $subtotal = (float)($m2Data['subtotal'] ?? 0);
+        $grandTotal = (float)($m2Data['grand_total'] ?? 0);
 
         // Prepara os itens do pedido
         $items = [];
@@ -226,36 +216,7 @@ class ExportOrdersToBisoCommand extends Command
         }
         
         // Usa o grand_total como referência principal para evitar discrepâncias
-        $orderTotalValue = $grandTotal;
-
-        // Prepara informações de pagamento
-        $payments = [];
-        if (isset($m2Data['payment']) && $order->is_payment_synced) {
-            // Usa o ID do pagamento já registrado na Biso
-            $paymentId = $order->payment_biso_id ?? (string)($m2Data['payment']['entity_id'] ?? $order->m2_id);
-            
-            $magentoPaymentMethod = $m2Data['payment']['method'] ?? '';
-            $paymentMethod = PaymentMethod::findByMagentoCode($magentoPaymentMethod);
-            
-            if ($paymentMethod) {
-                $payments[] = [
-                    'paymentId' => $paymentId,
-                    'paymentMethod' => $paymentMethod->biso_payment_method,
-                    'formsOfPayment' => $paymentMethod->biso_forms_of_payment,
-                    'paymentInstallment' => min($paymentMethod->max_installments, 1),
-                    'paymentValue' => $orderTotalValue, // Usar o mesmo valor total do pedido
-                ];
-            } else {
-                // Fallback para método não mapeado
-                $payments[] = [
-                    'paymentId' => $paymentId,
-                    'paymentMethod' => $magentoPaymentMethod ?: 'Unknown',
-                    'formsOfPayment' => null,
-                    'paymentInstallment' => 1,
-                    'paymentValue' => $orderTotalValue, // Usar o mesmo valor total do pedido
-                ];
-            }
-        }
+        $orderTotalValue = round($grandTotal, 2);
 
         return [
             'orderId' => (string)$order->m2_id,
@@ -266,7 +227,6 @@ class ExportOrdersToBisoCommand extends Command
             'customerUniqueIdentifier' => (string)($m2Data['customer_id'] ?? $m2Data['customer_email'] ?? ''),
             'shippingPrice' => round($shippingAmount, 2),
             'shippingPricePaidByCustomer' => round($shippingAmount, 2),
-            'payments' => $payments,
             'items' => $items,
             'origin' => 'Ecommerce',
             'status' => $this->mapMagentoStatusToBiso($order->m2_status, $order->m2_state, $order->is_paid),

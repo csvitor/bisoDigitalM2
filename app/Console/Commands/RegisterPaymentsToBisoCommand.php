@@ -48,6 +48,7 @@ class RegisterPaymentsToBisoCommand extends Command
 
         // Busca pedidos que ainda não tiveram pagamentos registrados na Biso
         $orders = Order::where('is_payment_synced', false)
+            ->where('is_synced_to_biso', true) // Só processa pedidos já enviados para a Biso
             ->where('payment_sync_attempts', '<', $maxAttempts)
             ->whereNotNull('m2_data->payment') // Só pedidos que têm informação de pagamento
             ->orderBy('order_date', 'desc')
@@ -73,6 +74,12 @@ class RegisterPaymentsToBisoCommand extends Command
     {
         if (!$bisoHelper) {
             $bisoHelper = HelperBisoDigital::init();
+        }
+
+        // Verifica se o pedido já foi enviado para a Biso
+        if (!$order->is_synced_to_biso) {
+            $this->error("Pedido {$order->order_number} ainda não foi enviado para a Biso. Execute 'export:orders-to-biso' primeiro.");
+            return false;
         }
 
         // Incrementa tentativas

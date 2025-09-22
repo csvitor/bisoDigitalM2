@@ -175,8 +175,8 @@ class ConfigForm
                 TextInput::make('cron_register_payments')
                     ->label('Cron: Registrar Pagamentos')
                     ->required()
-                    ->default('* * * * *')
-                    ->helperText('Expressão cron para registro de pagamentos no Biso'),
+                    ->default('*/3 * * * *')
+                    ->helperText('Expressão cron para registro de pagamentos no Biso (executa após criação de pedidos)'),
 
                 TextInput::make('cron_time_register_payments')
                     ->label('Tempo: Registrar Pagamentos')

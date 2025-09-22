@@ -44,7 +44,7 @@ class ConfigSeeder extends Seeder
                 'cron_export_orders' => '*/2 * * * *',
                 'cron_import_orders' => '*/2 * * * *',
                 'cron_update_orders' => '*/3 * * * *',
-                'cron_register_payments' => '*/1 * * * *',
+                'cron_register_payments' => '*/3 * * * *', // Executa após os pedidos serem criados
                 // Logs de tempo (inicialmente null)
                 'cron_time_export_products' => null,
                 'cron_time_import_products' => null,
