@@ -61,7 +61,7 @@ class ExportOrdersToBisoCommand extends Command
         $bisoHelper = HelperBisoDigital::init();
 
         foreach ($orders as $order) {
-            $this->processOrder($order, false, $maxAttempts, $bisoHelper);
+            $this->processOrder($order, false, $maxAttempts);
         }
     }
 
@@ -174,9 +174,12 @@ class ExportOrdersToBisoCommand extends Command
         // Prepara os itens do pedido
         $items = [];
         $itemsTotalValue = 0;
+        $totalShippingDistributed = 0;
 
         if (isset($m2Data['items'])) {
-            foreach ($m2Data['items'] as $item) {
+            $itemCount = count($m2Data['items']);
+            
+            foreach ($m2Data['items'] as $index => $item) {
                 $sku = $item['sku'] ?? '';
 
                 // Busca o produto na tabela local para pegar os IDs do Biso
@@ -189,6 +192,11 @@ class ExportOrdersToBisoCommand extends Command
                 $itemShipping = 0;
                 if ($shippingAmount > 0 && $subtotal > 0) {
                     $itemShipping = ($itemTotal / $subtotal) * $shippingAmount;
+                }
+
+                // Para o último item, ajusta o frete para garantir que a soma seja exata
+                if ($index === $itemCount - 1) {
+                    $itemShipping = $shippingAmount - $totalShippingDistributed;
                 }
 
                 $itemTotalValue = round($itemTotal + $itemShipping, 2);
@@ -212,6 +220,7 @@ class ExportOrdersToBisoCommand extends Command
                 ];
 
                 $itemsTotalValue += $itemTotalValue;
+                $totalShippingDistributed += $itemShipping;
             }
         }
         
