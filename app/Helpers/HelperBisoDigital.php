@@ -7,7 +7,7 @@ use App\Helpers\BisoApiLogger;
 
 class HelperBisoDigital
 {
-    const API_URL = 'https://api.bisodigital.com';
+    const API_URL = 'https://baas-api.biso.digital';
     const API_HOMOLOG_URL = 'https://baas-api-homolog.biso.digital';
     const API_STORE_ID = 'loja';
 
