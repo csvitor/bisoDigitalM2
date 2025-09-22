@@ -236,6 +236,7 @@ class ExportOrdersToBisoCommand extends Command
             'customerUniqueIdentifier' => (string)($m2Data['customer_id'] ?? $m2Data['customer_email'] ?? ''),
             'shippingPrice' => round($shippingAmount, 2),
             'shippingPricePaidByCustomer' => round($shippingAmount, 2),
+            'shippingMethod' => 'In-store Pickup',
             'items' => $items,
             'origin' => 'Ecommerce',
             'status' => $this->mapMagentoStatusToBiso($order->m2_status, $order->m2_state, $order->is_paid),
