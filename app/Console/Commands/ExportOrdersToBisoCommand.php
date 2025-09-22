@@ -209,9 +209,9 @@ class ExportOrdersToBisoCommand extends Command
                     'unitValue' => round((float)($item['price'] ?? 0), 2),
                     'totalValue' => $itemTotalValue, // Total do item + proporcional do frete
                     'discountValue' => round(abs($itemDiscount), 2),
-                    'shippingPrice' => $itemShipping,
-                    'itemValueWithoutShippingPrice' => $itemTotal,
-                    'shippingPricePaidByCustomer' => $itemShipping,
+                    'shippingPrice' => 0,
+                    'itemValueWithoutShippingPrice' => 0,
+                    'shippingPricePaidByCustomer' => 0,
                     'storeId' => 'loja',
                     'sellerId' => '',
                 ];
