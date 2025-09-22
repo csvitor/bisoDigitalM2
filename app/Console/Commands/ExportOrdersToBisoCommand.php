@@ -180,6 +180,7 @@ class ExportOrdersToBisoCommand extends Command
         $discountAmount = (float)($m2Data['discount_amount'] ?? 0);
         $taxAmount = (float)($m2Data['tax_amount'] ?? 0);
         $subtotal = (float)($m2Data['subtotal'] ?? 0);
+        $grandTotal = (float)($m2Data['grand_total'] ?? 0);
 
         // Prepara os itens do pedido
         $items = [];
@@ -194,7 +195,12 @@ class ExportOrdersToBisoCommand extends Command
 
                 $itemTotal = (float)($item['row_total'] ?? 0);
                 $itemDiscount = (float)($item['discount_amount'] ?? 0);
-                $itemShipping = $shippingAmount > 0 ? ($itemTotal / $subtotal) * $shippingAmount : 0;
+                
+                // Calcula o frete proporcional baseado no subtotal
+                $itemShipping = 0;
+                if ($shippingAmount > 0 && $subtotal > 0) {
+                    $itemShipping = ($itemTotal / $subtotal) * $shippingAmount;
+                }
 
                 $itemTotalValue = round($itemTotal + $itemShipping, 2);
                 $itemShipping = round($itemShipping, 2);
@@ -209,9 +215,9 @@ class ExportOrdersToBisoCommand extends Command
                     'unitValue' => round((float)($item['price'] ?? 0), 2),
                     'totalValue' => $itemTotalValue, // Total do item + proporcional do frete
                     'discountValue' => round(abs($itemDiscount), 2),
-                    'shippingPrice' => 0,
-                    'itemValueWithoutShippingPrice' => 0,
-                    'shippingPricePaidByCustomer' => 0,
+                    'shippingPrice' => $itemShipping,
+                    'itemValueWithoutShippingPrice' => $itemTotal,
+                    'shippingPricePaidByCustomer' => $itemShipping,
                     'storeId' => 'loja',
                     'sellerId' => '',
                 ];
@@ -219,7 +225,9 @@ class ExportOrdersToBisoCommand extends Command
                 $itemsTotalValue += $itemTotalValue;
             }
         }
-        $itemsTotalValue = round($itemsTotalValue, 2);
+        
+        // Usa o grand_total como referência principal para evitar discrepâncias
+        $orderTotalValue = round($grandTotal, 2);
 
         // Prepara informações de pagamento
         $payments = [];
@@ -236,7 +244,7 @@ class ExportOrdersToBisoCommand extends Command
                     'paymentMethod' => $paymentMethod->biso_payment_method,
                     'formsOfPayment' => $paymentMethod->biso_forms_of_payment,
                     'paymentInstallment' => min($paymentMethod->max_installments, 1),
-                    'paymentValue' => round((float)$order->total_amount, 2),
+                    'paymentValue' => $orderTotalValue, // Usar o mesmo valor total do pedido
                 ];
             } else {
                 // Fallback para método não mapeado
@@ -245,7 +253,7 @@ class ExportOrdersToBisoCommand extends Command
                     'paymentMethod' => $magentoPaymentMethod ?: 'Unknown',
                     'formsOfPayment' => null,
                     'paymentInstallment' => 1,
-                    'paymentValue' => round((float)$order->total_amount, 2),
+                    'paymentValue' => $orderTotalValue, // Usar o mesmo valor total do pedido
                 ];
             }
         }
@@ -253,7 +261,7 @@ class ExportOrdersToBisoCommand extends Command
         return [
             'orderId' => (string)$order->m2_id,
             'channel' => 'website',
-            'totalValue' => $itemsTotalValue, // Usa a soma calculada dos itens
+            'totalValue' => $orderTotalValue, // Usar o grand_total do Magento
             'discountValue' => round(abs($discountAmount), 2),
             'createdAt' => $order->order_date->format('Y-m-d\TH:i:s'),
             'customerUniqueIdentifier' => (string)($m2Data['customer_id'] ?? $m2Data['customer_email'] ?? ''),
