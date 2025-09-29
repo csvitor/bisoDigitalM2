@@ -227,6 +227,13 @@ class ExportOrdersToBisoCommand extends Command
         // Usa o grand_total como referência principal para evitar discrepâncias
         $orderTotalValue = round($grandTotal, 2);
 
+        // Extrai dados do endereço de entrega
+        $shippingAddress = $m2Data['extension_attributes']['shipping_assignments'][0]['shipping']['address'] ?? null;
+        $billingAddress = $m2Data['billing_address'] ?? null;
+        
+        // Usa endereço de entrega como prioridade, ou billing como fallback
+        $deliveryAddress = $shippingAddress ?? $billingAddress;
+
         return [
             'orderId' => (string)$order->m2_id,
             'channel' => 'website',
@@ -234,6 +241,13 @@ class ExportOrdersToBisoCommand extends Command
             'discountValue' => round(abs($discountAmount), 2),
             'createdAt' => $order->order_date->format('Y-m-d\TH:i:s'),
             'customerUniqueIdentifier' => (string)($m2Data['customer_id'] ?? $m2Data['customer_email'] ?? ''),
+            'customerEmail' => $m2Data['customer_email'] ?? null,
+            'customerDocument' => $this->extractDocument($m2Data),
+            'customerFullName' => $this->extractCustomerFullName($m2Data),
+            'customerPhone' => $this->extractCustomerPhone($deliveryAddress, $billingAddress),
+            'customerDestinationAddressCity' => $deliveryAddress['city'] ?? null,
+            'customerDestinationAddressState' => $deliveryAddress['region'] ?? null,
+            'customerDestinationAddressCountry' => $deliveryAddress['country_id'] ?? null,
             'shippingPrice' => round($shippingAmount, 2),
             'shippingPricePaidByCustomer' => round($shippingAmount, 2),
             'shippingMethod' => 'In-store Pickup',
@@ -267,5 +281,86 @@ class ExportOrdersToBisoCommand extends Command
 
         // Status open (default para pending, new, etc.)
         return 'open';
+    }
+
+    /**
+     * Extrai o documento do cliente (CPF/CNPJ)
+     */
+    private function extractDocument($m2Data)
+    {
+        // Tenta pegar do customer_taxvat (campo principal do Magento)
+        if (!empty($m2Data['customer_taxvat'])) {
+            return preg_replace('/[^0-9]/', '', $m2Data['customer_taxvat']);
+        }
+
+        // Fallback: tenta pegar do billing address vat_id
+        if (!empty($m2Data['billing_address']['vat_id'])) {
+            return preg_replace('/[^0-9]/', '', $m2Data['billing_address']['vat_id']);
+        }
+
+        // Fallback: tenta pegar do shipping address vat_id
+        $shippingAddress = $m2Data['extension_attributes']['shipping_assignments'][0]['shipping']['address'] ?? null;
+        if (!empty($shippingAddress['vat_id'])) {
+            return preg_replace('/[^0-9]/', '', $shippingAddress['vat_id']);
+        }
+
+        return null;
+    }
+
+    /**
+     * Extrai o nome completo do cliente
+     */
+    private function extractCustomerFullName($m2Data)
+    {
+        $firstName = $m2Data['customer_firstname'] ?? '';
+        $lastName = $m2Data['customer_lastname'] ?? '';
+        
+        if ($firstName && $lastName) {
+            return trim($firstName . ' ' . $lastName);
+        }
+
+        // Fallback: tenta pegar do billing address
+        $billingFirstName = $m2Data['billing_address']['firstname'] ?? '';
+        $billingLastName = $m2Data['billing_address']['lastname'] ?? '';
+        
+        if ($billingFirstName && $billingLastName) {
+            return trim($billingFirstName . ' ' . $billingLastName);
+        }
+
+        return trim($firstName . ' ' . $lastName) ?: null;
+    }
+
+    /**
+     * Extrai o telefone do cliente
+     */
+    private function extractCustomerPhone($deliveryAddress, $billingAddress)
+    {
+        // Prioridade: endereço de entrega
+        if (!empty($deliveryAddress['telephone'])) {
+            return $this->formatPhone($deliveryAddress['telephone']);
+        }
+
+        // Fallback: endereço de cobrança
+        if (!empty($billingAddress['telephone'])) {
+            return $this->formatPhone($billingAddress['telephone']);
+        }
+
+        return null;
+    }
+
+    /**
+     * Formata o telefone removendo caracteres especiais
+     */
+    private function formatPhone($phone)
+    {
+        if (empty($phone)) {
+            return null;
+        }
+
+        // Remove todos os caracteres que não são números
+        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
+        
+        // Retorna apenas se tiver pelo menos 10 dígitos (formato brasileiro)
+        return strlen($cleanPhone) >= 10 ? $cleanPhone : null;
     }
 }
