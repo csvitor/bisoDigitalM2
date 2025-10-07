@@ -250,7 +250,7 @@ class ExportOrdersToBisoCommand extends Command
             'customerDestinationAddressCountry' => $deliveryAddress['country_id'] ?? null,
             'shippingPrice' => round($shippingAmount, 2),
             'shippingPricePaidByCustomer' => round($shippingAmount, 2),
-            'shippingMethod' => 'In-store Pickup',
+            'shippingMethod' => $this->x($m2Data),
             'items' => $items,
             'origin' => 'Ecommerce',
             'status' => $this->mapMagentoStatusToBiso($order->m2_status, $order->m2_state, $order->is_paid),
@@ -362,5 +362,33 @@ class ExportOrdersToBisoCommand extends Command
         
         // Retorna apenas se tiver pelo menos 10 dígitos (formato brasileiro)
         return strlen($cleanPhone) >= 10 ? $cleanPhone : null;
+    }
+
+    /**
+     * Extrai o nome da transportadora do shipping_description
+     * Remove informações de prazo de entrega
+     */
+    private function extractShippingCarrier($m2Data)
+    {
+        $shippingDescription = $m2Data['shipping_description'] ?? '';
+        
+        if (empty($shippingDescription)) {
+            return 'In-store Pickup';
+        }
+        
+        // Remove padrões comuns de prazo de entrega
+        // Exemplos: "DIALOGO - Normal (5 dias úteis)" -> "DIALOGO"
+        //          "PRESSA FR (TESTE) - Pesada (3 dias úteis)" -> "PRESSA FR (TESTE)"
+        
+        // Remove tudo após " - " seguido de informações de prazo
+        $carrier = preg_replace('/\s*-\s*[^-]*\(\d+\s*dias?\s*úteis?\).*$/', '', $shippingDescription);
+        
+        // Remove apenas a parte do prazo se não tiver " - "
+        $carrier = preg_replace('/\s*\(\d+\s*dias?\s*úteis?\).*$/', '', $carrier);
+        
+        // Limpa espaços extras
+        $carrier = trim($carrier);
+        
+        return !empty($carrier) ? $carrier : 'In-store Pickup';
     }
 }
