@@ -83,6 +83,7 @@ class ExportProductsToBisoCommand extends Command
             'productCost'       => (float) $this->getCustomAttributes($m2_data['custom_attributes'] ?? [], 'cost') ?? 0,
             'productSalePrice'  => (float)($m2_data['price'] ?? 0),
             'productImageUrl'   => $this->getProductImageUrl($m2_data),
+            'productBrand'      => $this->getCustomAttributes($m2_data['custom_attributes'] ?? [], 'brand') ?? '',
             'isActive'          => ($m2_data['status'] ?? 0) == 1,
         ];
     }
