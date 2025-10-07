@@ -237,6 +237,7 @@ class ExportOrdersToBisoCommand extends Command
         return [
             'orderId' => (string)$order->m2_id,
             'channel' => 'website',
+            'sourcePlatform' => 'Magento 2',
             'totalValue' => $orderTotalValue, // Usar o grand_total do Magento
             'discountValue' => round(abs($discountAmount), 2),
             'createdAt' => $order->order_date->format('Y-m-d\TH:i:s'),
