@@ -82,6 +82,7 @@ class ExportProductsToBisoCommand extends Command
             'productPrice'      => (float)($m2_data['price'] ?? 0),
             'productCost'       => (float) $this->getCustomAttributes($m2_data['custom_attributes'] ?? [], 'cost') ?? 0,
             'productSalePrice'  => (float)($m2_data['price'] ?? 0),
+            'productImageUrl'   => $this->getProductImageUrl($m2_data),
             'isActive'          => ($m2_data['status'] ?? 0) == 1,
         ];
     }
@@ -101,6 +102,33 @@ class ExportProductsToBisoCommand extends Command
                 }
             }
         }
+        return null;
+    }
+
+    /**
+     * Get product image URL from Magento data
+     * @param array $m2_data
+     * @return string|null
+     */
+    private function getProductImageUrl(array $m2_data): ?string
+    {
+        $baseUrl = rtrim(env('MAGENTO_URL', ''), '/');
+        $mediaPath = '/media/catalog/product';
+        
+        // Tenta buscar a imagem principal em ordem de prioridade
+        $imageFields = ['image', 'small_image', 'thumbnail'];
+        
+        foreach ($imageFields as $field) {
+            $imagePath = $this->getCustomAttributes($m2_data['custom_attributes'] ?? [], $field);
+            
+            // Garante que imagePath é uma string
+            if (is_string($imagePath) && $imagePath !== 'no_selection' && !empty(trim($imagePath))) {
+                // Remove barras duplas e garante que a URL está formatada corretamente
+                $fullUrl = $baseUrl . $mediaPath . '/' . ltrim($imagePath, '/');
+                return str_replace('//', '/', str_replace($baseUrl . '//', $baseUrl . '/', $fullUrl));
+            }
+        }
+        
         return null;
     }
 }

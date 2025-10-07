@@ -48,7 +48,7 @@ class ImportMagentoProductsCron extends Command
 
         $params = [
             // request category_links inside extension_attributes so we can get category IDs when category_ids is not present
-            'fields' => 'items[id,sku,name,price,status,type_id,attribute_set_id,weight,visibility,updated_at,created_at,extension_attributes[category_links],custom_attributes[cost,url_key,sync_biso_digital]],search_criteria[page_size,current_page],total_count[]',
+            'fields' => 'items[id,sku,name,price,status,type_id,attribute_set_id,weight,visibility,updated_at,created_at,extension_attributes[category_links],custom_attributes[cost,url_key,sync_biso_digital,image,small_image,thumbnail]],search_criteria[page_size,current_page],total_count[]',
             'searchCriteria' => [
                 'filter_groups' => [
                     [
