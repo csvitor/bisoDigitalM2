@@ -84,6 +84,7 @@ class ExportProductsToBisoCommand extends Command
             'productSalePrice'  => (float)($m2_data['price'] ?? 0),
             'productImageUrl'   => $this->getProductImageUrl($m2_data),
             'productBrand'      => $this->getCustomAttributes($m2_data['custom_attributes'] ?? [], 'brand') ?? '',
+            'productPagePath'   => $this->getProductPagePath($m2_data),
             'isActive'          => ($m2_data['status'] ?? 0) == 1,
         ];
     }
@@ -128,6 +129,36 @@ class ExportProductsToBisoCommand extends Command
                 $fullUrl = $baseUrl . $mediaPath . '/' . ltrim($imagePath, '/');
                 return str_replace('//', '/', str_replace($baseUrl . '//', $baseUrl . '/', $fullUrl));
             }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get product page path from Magento data
+     * @param array $m2_data
+     * @return string|null
+     */
+    private function getProductPagePath(array $m2_data): ?string
+    {
+        // Busca o url_key do produto
+        $urlKey = $this->getCustomAttributes($m2_data['custom_attributes'] ?? [], 'url_key');
+        
+        if (is_string($urlKey) && !empty(trim($urlKey))) {
+            // Retorna apenas o caminho relativo do produto
+            // Formato padrão do Magento: /produto-url-key.html
+            return '/' . trim($urlKey) . '.html';
+        }
+        
+        // Fallback: constrói path baseado no SKU se url_key não estiver disponível
+        $sku = $m2_data['sku'] ?? '';
+        if (!empty($sku)) {
+            // Converte o SKU para um formato de URL amigável
+            $urlFriendlySku = strtolower(preg_replace('/[^a-zA-Z0-9]/', '-', $sku));
+            $urlFriendlySku = preg_replace('/-+/', '-', $urlFriendlySku); // Remove hífens duplos
+            $urlFriendlySku = trim($urlFriendlySku, '-'); // Remove hífens do início/fim
+            
+            return '/' . $urlFriendlySku . '.html';
         }
         
         return null;
