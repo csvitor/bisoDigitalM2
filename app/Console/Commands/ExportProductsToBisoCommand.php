@@ -127,7 +127,7 @@ class ExportProductsToBisoCommand extends Command
             if (is_string($imagePath) && $imagePath !== 'no_selection' && !empty(trim($imagePath))) {
                 // Remove barras duplas e garante que a URL está formatada corretamente
                 $fullUrl = $baseUrl . $mediaPath . '/' . ltrim($imagePath, '/');
-                return str_replace('//', '/', str_replace($baseUrl . '//', $baseUrl . '/', $fullUrl));
+                return $fullUrl;
             }
         }
         
