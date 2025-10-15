@@ -251,7 +251,7 @@ class ExportOrdersToBisoCommand extends Command
             'customerDestinationAddressCountry' => $deliveryAddress['country_id'] ?? null,
             'shippingPrice' => round($shippingAmount, 2),
             'shippingPricePaidByCustomer' => round($shippingAmount, 2),
-            'shippingMethod' => $this->x($m2Data),
+            'shippingMethod' => $this->extractShippingCarrier($m2Data),
             'items' => $items,
             'origin' => 'Ecommerce',
             'status' => $this->mapMagentoStatusToBiso($order->m2_status, $order->m2_state, $order->is_paid),
