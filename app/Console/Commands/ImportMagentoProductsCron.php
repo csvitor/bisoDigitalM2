@@ -106,6 +106,11 @@ class ImportMagentoProductsCron extends Command
         // Busca as categorias permitidas da configuração
         $allowedCategories = explode(',', env('ALLOWED_CATEGORIES', '')); // array de strings
 
+        if(!isset($products['items']) && !is_array($products['items'])){
+            $this->info('Nenhum produto encontrado.');
+            return;
+        }
+        
         foreach ($products['items'] as $product) {
             $product = (array) $product;
             // tenta obter a categoria principal a partir de diferentes fontes retornadas pelo Magento
