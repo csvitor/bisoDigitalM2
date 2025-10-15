@@ -137,6 +137,12 @@ class ImportMagentoProductsCron extends Command
                     }
 
                     if (!$catId) {
+                        $sku = $product['sku'] ?? 'unknown';
+                        \Illuminate\Support\Facades\Log::warning('SKU sem categoria permitida no Magento', [
+                            'm2_id' => $product['id'] ?? null,
+                            'sku' => $sku,
+                            'category_links' => $extension_attributes['category_links'] ?? null,
+                        ]);
                         continue;
                     }
 
